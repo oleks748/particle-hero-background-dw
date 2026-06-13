@@ -29,6 +29,12 @@
       display: block;
       width: 100%;
       height: 100%;
+      opacity: 0;
+      transition: opacity 900ms ease;
+    }
+
+    .particle-hero.is-ready #particle-bg {
+      opacity: 1;
     }
   </style>
 </head>
@@ -106,7 +112,6 @@
       let startedAt = performance.now();
       let previousFrame = startedAt;
       let firstChaos = true;
-      let introOpacity = 0;
 
       const stateOrder = ["chaos", "user", "file", "money", "logo"];
       const lerp = (a, b, t) => a + (b - a) * t;
@@ -158,13 +163,16 @@
       }
 
       function createParticles() {
-        particles = Array.from({ length: config.particleCount }, (_, index) => ({
+        particles = Array.from({ length: config.particleCount }, (_, index) => {
+          const x = rand(0, width);
+          const y = rand(0, height);
+          return {
           index,
           shapeMember: Math.random() < config.shapeParticleShare,
-          x: rand(0, width),
-          y: rand(0, height),
-          fromX: 0,
-          fromY: 0,
+          x,
+          y,
+          fromX: x,
+          fromY: y,
           targetX: rand(0, width),
           targetY: rand(0, height),
           vx: rand(-12, 12),
@@ -175,7 +183,8 @@
           curveX: 0,
           curveY: 0,
           curveAmp: 0,
-        }));
+        };
+        });
       }
 
       function iconPoints(name) {
@@ -319,11 +328,9 @@
         const morphProgress = clamp01((now - transitionStartedAt) / (config.morphSeconds * 1000));
         const easedProgress = ease(morphProgress);
 
-        introOpacity = Math.min(1, (now - startedAt) / 1000);
-
         ctx.clearRect(0, 0, width, height);
         ctx.fillStyle = config.color;
-        ctx.globalAlpha = introOpacity;
+        ctx.globalAlpha = 1;
 
         particles.forEach((particle) => {
           const isFreeParticle = nextState !== "chaos" && !particle.shapeMember;
@@ -380,7 +387,7 @@
           transitionStartedAt = now;
           lastSwitchAt = now;
           draw(now);
-          
+          hero.classList.add("is-ready");
         });
       }
 
